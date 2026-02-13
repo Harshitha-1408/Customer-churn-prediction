@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telecom Customer Churn Prediction System</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --success: #4cc9f0;
+            --warning: #f8961e;
+            --danger: #f94144;
+            --dark: #2b2d42;
+            --light: #f8f9fa;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .main-wrapper {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 30px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .card {
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            margin-bottom: 25px;
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 50px rgba(0,0,0,0.12);
+        }
+        
+        .card-header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border-radius: 20px 20px 0 0 !important;
+            border: none;
+            padding: 1.2rem 1.8rem;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        
+        .prediction-result {
+            font-size: 3.5rem;
+            font-weight: 800;
+            line-height: 1;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, var(--dark), #000);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .risk-badge {
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            letter-spacing: 1px;
+        }
+        
+        .probability-card {
+            background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .feature-contribution {
+            padding: 12px 15px;
+            border-bottom: 1px solid #edf2f7;
+            transition: all 0.2s ease;
+        }
+        
+        .feature-contribution:hover {
+            background: #f8fafd;
+            transform: translateX(5px);
+        }
+        
+        .positive-contrib {
+            color: var(--danger);
+            font-weight: 700;
+        }
+        
+        .negative-contrib {
+            color: #10b981;
+            font-weight: 700;
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 1px solid #edf2f7;
+        }
+        
+        .form-section {
+            background: #f8fafd;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+        }
+        
+        .form-control, .form-select {
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 10px 15px;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+        }
+        
+        .btn-predict {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            font-weight: 700;
+            padding: 16px 30px;
+            border-radius: 50px;
+            border: none;
+            width: 100%;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-predict:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(67, 97, 238, 0.4);
+        }
+        
+        .btn-predict:active {
+            transform: translateY(-1px);
+        }
+        
+        .metric-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            border-left: 5px solid;
+            transition: all 0.3s ease;
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--dark);
+            margin: 10px 0;
+        }
+        
+        .metric-label {
+            color: #64748b;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255,255,255,0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            backdrop-filter: blur(5px);
+        }
+        
+        .loading-content {
+            text-align: center;
+        }
+        
+        .spinner-custom {
+            width: 80px;
+            height: 80px;
+            border: 8px solid #e2e8f0;
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .badge-accuracy {
+            background: linear-gradient(135deg, #667eea20 0%, #764ba220 100%);
+            color: var(--primary);
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-weight: 600;
+        }
+        
+        .tooltip-icon {
+            color: #94a3b8;
+            cursor: help;
+            margin-left: 5px;
+            font-size: 0.85rem;
+        }
+        
+        .range-value {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        .nav-pills .nav-link {
+            color: var(--dark);
+            border-radius: 10px;
+            padding: 10px 20px;
+            margin: 0 5px;
+        }
+        
+        .nav-pills .nav-link.active {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="spinner-custom mb-4"></div>
+            <h4 class="text-dark">Analyzing Customer Data</h4>
+            <p class="text-muted">Our ML model (94% accuracy) is processing your request...</p>
+        </div>
+    </div>
+
+    <div class="container-fluid main-wrapper">
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-5">
+            <div>
+                <h1 class="display-5 fw-bold mb-2" style="color: var(--dark);">
+                    <i class="fas fa-chart-line me-3" style="color: var(--primary);"></i>
+                    Churn Prediction System
+                </h1>
+                <p class="text-muted mb-0">Powered by Machine Learning • 94% Accuracy • Real-time Predictions</p>
+            </div>
+            <div class="badge-accuracy">
+                <i class="fas fa-robot me-2"></i>
+                Model v1.0 • AUC: {{ model_auc }}
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Left Column - Input Form -->
+            <div class="col-lg-5">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-user-circle me-2"></i> Customer Information
+                    </div>
+                    <div class="card-body">
+                        <form id="predictionForm">
+                            <!-- Basic Information -->
+                            <div class="form-section">
+                                <h6 class="mb-3" style="color: var(--primary);">
+                                    <i class="fas fa-id-card me-2"></i>Basic Information
+                                </h6>
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label">State</label>
+                                        <select class="form-select" name="state" required>
+                                            <option value="">Select State</option>
+                                            {% for state in states %}
+                                            <option value="{{ state }}" {% if state == 'CA' %}selected{% endif %}>{{ state }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Area Code</label>
+                                        <select class="form-select" name="area_code" required>
+                                            {% for code in area_codes %}
+                                            <option value="{{ code }}" {% if code == '415' %}selected{% endif %}>{{ code }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Account Length (months)</label>
+                                        <input type="number" class="form-control" name="account_length" 
+                                               min="1" max="250" value="100" required>
+                                        <div class="form-text">Customer tenure in months</div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Customer Service Calls</label>
+                                        <input type="number" class="form-control" name="customer_service_calls" 
+                                               min="0" max="10" value="1" required>
+                                        <div class="form-text">Number of calls to customer service</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Plans Section -->
+                            <div class="form-section">
+                                <h6 class="mb-3" style="color: var(--primary);">
+                                    <i class="fas fa-file-invoice me-2"></i>Service Plans
+                                </h6>
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label">International Plan</label>
+                                        <select class="form-select" name="international_plan" required>
+                                            <option value="No">No</option>
+                                            <option value="Yes">Yes</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Voice Mail Plan</label>
+                                        <select class="form-select" name="voice_mail_plan" required>
+                                            <option value="No">No</option>
+                                            <option value="Yes">Yes</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Number of Voice Mail Messages</label>
+                                    <input type="number" class="form-control" name="number_vmail_messages" 
+                                           min="0" max="60" value="0" required>
+                                </div>
+                            </div>
+
+                            <!-- Day Usage -->
+                            <div class="form-section">
+                                <h6 class="mb-3" style="color: var(--primary);">
+                                    <i class="fas fa-sun me-2"></i>Day Usage
+                                </h6>
+                                <div class="row mb-3">
+                                    <div class="col-md-4">
+                                        <label class="form-label">Minutes</label>
+                                        <input type="number" class="form-control" name="total_day_minutes" 
+                                               min="0" max="400" step="0.1" value="180" required>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Calls</label>
+                                        <input type="number" class="form-control" name="total_day_calls" 
+                                               min="0" max="200" value="100" required>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Charge ($)</label>
+                                        <input type="number" class="form-control" name="total_day_charge" 
+                                               min="0" max="80" step="0.01" value="30.00" required>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Evening Usage -->
+                            <div class="form-section">
+                                <h6 class="mb-3" style="color: var(--primary);">
+                                    <i class="fas fa-moon me-2"></i>Evening Usage
+                                </h6>
+                                <div class="row mb-3">
+                                    <div class="col-md-4">
+                                        <label class="form-label">Minutes</label>
+                                        <input type="number" class="form-control" name="total_eve_minutes" 
+                                               min="0" max="500" step="0.1" value="200" required>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Calls</label>
+                                        <input type="number" class="form-control" name="total_eve_calls" 
+                                               min="0" max="200" value="100" required>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Charge ($)</label>
+                                        <input type="number" class="form-control" name="total_eve_charge" 
+                                               min="0" max="50" step="0.01" value="17.00" required>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Night Usage -->
+                            <div class="form-section">
+                                <h6 class="mb-3" style="color: var(--primary);">
+                                    <i class="fas fa-cloud-moon me-2"></i>Night Usage
+                                </h6>
+                                <div class="row mb-3">
+                                    <div class="col-md-4">
+                                        <label class="form-label">Minutes</label>
+                                        <input type="number" class="form-control" name="total_night_minutes" 
+                                               min="0" max="500" step="0.1" value="200" required>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Calls</label>
+                                        <input type="number" class="form-control" name="total_night_calls" 
+                                               min="0" max="200" value="100" required>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Charge ($)</label>
+                                        <input type="number" class="form-control" name="total_night_charge" 
+                                               min="0" max="30" step="0.01" value="9.00" required>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- International Usage -->
+                            <div class="form-section">
+                                <h6 class="mb-3" style="color: var(--primary);">
+                                    <i class="fas fa-globe me-2"></i>International Usage
+                                </h6>
+                                <div class="row mb-3">
+                                    <div class="col-md-4">
+                                        <label class="form-label">Minutes</label>
+                                        <input type="number" class="form-control" name="total_intl_minutes" 
+                                               min="0" max="30" step="0.1" value="10" required>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Calls</label>
+                                        <input type="number" class="form-control" name="total_intl_calls" 
+                                               min="0" max="20" value="4" required>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Charge ($)</label>
+                                        <input type="number" class="form-control" name="total_intl_charge" 
+                                               min="0" max="10" step="0.01" value="2.70" required>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-predict mt-4">
+                                <i class="fas fa-brain me-2"></i>Predict Churn Risk
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Model Performance Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-chart-simple me-2"></i> Model Performance Metrics
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="metric-card" style="border-left-color: var(--primary);">
+                                    <i class="fas fa-bullseye fa-2x" style="color: var(--primary);"></i>
+                                    <div class="metric-value">{{ model_accuracy }}</div>
+                                    <div class="metric-label">Accuracy</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="metric-card" style="border-left-color: #10b981;">
+                                    <i class="fas fa-crosshairs fa-2x" style="color: #10b981;"></i>
+                                    <div class="metric-value">{{ model_precision }}</div>
+                                    <div class="metric-label">Precision</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="metric-card" style="border-left-color: var(--warning);">
+                                    <i class="fas fa-search fa-2x" style="color: var(--warning);"></i>
+                                    <div class="metric-value">{{ model_recall }}</div>
+                                    <div class="metric-label">Recall</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="metric-card" style="border-left-color: var(--danger);">
+                                    <i class="fas fa-balance-scale fa-2x" style="color: var(--danger);"></i>
+                                    <div class="metric-value">{{ model_f1 }}</div>
+                                    <div class="metric-label">F1-Score</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-4 p-3 bg-light rounded">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-circle-check text-success fa-2x me-3"></i>
+                                <div>
+                                    <strong>Model trained on {{ metadata.data_info.training_samples if metadata else '5,000+' }} samples</strong>
+                                    <br>
+                                    <small class="text-muted">Random Forest Classifier with 94% accuracy</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column - Results -->
+            <div class="col-lg-7">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-chart-bar me-2"></i> Prediction Results
+                    </div>
+                    <div class="card-body">
+                        <!-- Initial State -->
+                        <div id="initialMessage" class="text-center py-5">
+                            <div class="mb-4">
+                                <i class="fas fa-robot fa-5x text-muted" style="opacity: 0.5;"></i>
+                            </div>
+                            <h4 class="text-muted mb-3">Ready to Predict Customer Churn</h4>
+                            <p class="text-muted mb-4">Enter customer information and click "Predict Churn Risk" to get started</p>
+                            <div class="d-flex justify-content-center">
+                                <div class="badge-accuracy me-2">
+                                    <i class="fas fa-chart-line me-1"></i> 94% Accuracy
+                                </div>
+                                <div class="badge-accuracy">
+                                    <i class="fas fa-database me-1"></i> 20+ Features
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Results Container -->
+                        <div id="predictionResult" style="display: none;">
+                            <!-- Header -->
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <div>
+                                    <h4 class="mb-1" style="color: var(--dark);">
+                                        <i class="fas fa-clipboard-check me-2" style="color: var(--primary);"></i>
+                                        Risk Assessment Report
+                                    </h4>
+                                    <small class="text-muted" id="predictionTime"></small>
+                                </div>
+                                <span class="badge bg-light text-dark p-3">
+                                    <i class="fas fa-bolt me-1"></i>
+                                    94% Model Accuracy
+                                </span>
+                            </div>
+
+                            <!-- Main Risk Display -->
+                            <div class="row mb-4">
+                                <div class="col-md-8">
+                                    <div class="probability-card h-100 d-flex flex-column justify-content-center">
+                                        <span class="badge bg-white text-dark mb-3" id="riskBadge" style="font-size: 1rem; padding: 10px 20px;">
+                                            Low Risk
+                                        </span>
+                                        <p class="mb-2" id="recommendationText" style="font-size: 1.1rem;">
+                                            Customer shows strong retention indicators.
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="probability-card h-100 d-flex flex-column align-items-center justify-content-center">
+                                        <small class="text-muted mb-2">Churn Probability</small>
+                                        <div class="prediction-result" id="predictionPercentage">65.8%</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Customer Summary -->
+                            <div class="row mb-4">
+                                <div class="col-12">
+                                    <div class="bg-light p-3 rounded">
+                                        <h6 class="mb-3">
+                                            <i class="fas fa-user me-2" style="color: var(--primary);"></i>
+                                            Customer Summary
+                                        </h6>
+                                        <div class="row" id="customerSummary">
+                                            <!-- Dynamically populated -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Charts -->
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="chart-container">
+                                        <h6 class="mb-3">
+                                            <i class="fas fa-chart-pie me-2" style="color: var(--primary);"></i>
+                                            Probability Distribution
+                                        </h6>
+                                        <div id="probabilityChartContainer" class="text-center">
+                                            <img id="probabilityChart" src="" alt="Probability Distribution" class="img-fluid">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="chart-container">
+                                        <h6 class="mb-3">
+                                            <i class="fas fa-chart-bar me-2" style="color: var(--primary);"></i>
+                                            Top Risk Factors
+                                        </h6>
+                                        <div id="contributionsChartContainer" class="text-center">
+                                            <img id="contributionsChart" src="" alt="Feature Contributions" class="img-fluid">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Feature Contributions -->
+                            <div class="mt-4">
+                                <h6 class="mb-3">
+                                    <i class="fas fa-list-ul me-2" style="color: var(--primary);"></i>
+                                    Detailed Factor Analysis
+                                </h6>
+                                <div class="bg-light rounded p-3">
+                                    <div id="featureContributionsList">
+                                        <!-- Feature contributions will be populated here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Handle form submission
+        document.getElementById('predictionForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Show loading overlay
+            document.getElementById('loadingOverlay').style.display = 'flex';
+            document.getElementById('initialMessage').style.display = 'none';
+            document.getElementById('predictionResult').style.display = 'none';
+            
+            // Get form data
+            const formData = new FormData(this);
+            
+            // Send prediction request
+            fetch('/predict', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Hide loading overlay
+                document.getElementById('loadingOverlay').style.display = 'none';
+                
+                if (data.success) {
+                    // Show results
+                    document.getElementById('predictionResult').style.display = 'block';
+                    
+                    // Update prediction percentage
+                    const predictionElement = document.getElementById('predictionPercentage');
+                    predictionElement.textContent = data.churn_probability;
+                    
+                    // Update risk badge
+                    const riskBadge = document.getElementById('riskBadge');
+                    riskBadge.textContent = data.risk_level;
+                    riskBadge.className = `badge bg-${data.risk_color} text-white mb-3 p-3`;
+                    riskBadge.style.fontSize = '1rem';
+                    
+                    // Update recommendation
+                    document.getElementById('recommendationText').textContent = data.recommendation;
+                    
+                    // Update time
+                    document.getElementById('predictionTime').innerHTML = `<i class="fas fa-clock me-1"></i> ${data.prediction_time}`;
+                    
+                    // Update customer summary
+                    updateCustomerSummary(data.customer_summary);
+                    
+                    // Update charts
+                    if (data.probability_chart) {
+                        document.getElementById('probabilityChart').src = data.probability_chart;
+                    }
+                    
+                    if (data.contributions_chart) {
+                        document.getElementById('contributionsChart').src = data.contributions_chart;
+                    }
+                    
+                    // Update feature contributions
+                    updateFeatureContributions(data.feature_contributions);
+                } else {
+                    alert('Error: ' + (data.error || 'Prediction failed'));
+                    document.getElementById('initialMessage').style.display = 'block';
+                }
+            })
+            .catch(error => {
+                document.getElementById('loadingOverlay').style.display = 'none';
+                alert('Error: ' + error.message);
+                document.getElementById('initialMessage').style.display = 'block';
+            });
+        });
+
+        function updateCustomerSummary(summary) {
+            const container = document.getElementById('customerSummary');
+            container.innerHTML = `
+                <div class="col-md-4 mb-2">
+                    <small class="text-muted d-block">State / Area Code</small>
+                    <strong>${summary.state} (${summary.area_code})</strong>
+                </div>
+                <div class="col-md-4 mb-2">
+                    <small class="text-muted d-block">Account Length</small>
+                    <strong>${summary.account_length} months</strong>
+                </div>
+                <div class="col-md-4 mb-2">
+                    <small class="text-muted d-block">Customer Service Calls</small>
+                    <strong>${summary.customer_service_calls} calls</strong>
+                </div>
+                <div class="col-md-4 mb-2">
+                    <small class="text-muted d-block">International Plan</small>
+                    <strong>${summary.international_plan}</strong>
+                </div>
+                <div class="col-md-4 mb-2">
+                    <small class="text-muted d-block">Voice Mail Plan</small>
+                    <strong>${summary.voice_mail_plan}</strong>
+                </div>
+                <div class="col-md-4 mb-2">
+                    <small class="text-muted d-block">Total Usage</small>
+                    <strong>${parseFloat(summary.total_day_minutes + summary.total_eve_minutes + summary.total_night_minutes + summary.total_intl_minutes).toFixed(1)} mins</strong>
+                </div>
+            `;
+        }
+
+        function updateFeatureContributions(contributions) {
+            const container = document.getElementById('featureContributionsList');
+            container.innerHTML = '';
+            
+            if (contributions) {
+                Object.entries(contributions).forEach(([feature, contribution]) => {
+                    const div = document.createElement('div');
+                    div.className = 'd-flex justify-content-between align-items-center feature-contribution';
+                    
+                    const contribClass = contribution > 0 ? 'positive-contrib' : 'negative-contrib';
+                    const sign = contribution > 0 ? '+' : '';
+                    const contributionPercent = (contribution * 100).toFixed(1);
+                    
+                    div.innerHTML = `
+                        <div>
+                            <i class="fas fa-${contribution > 0 ? 'arrow-up' : 'arrow-down'} me-2 ${contribClass}"></i>
+                            <span class="fw-600">${feature}</span>
+                        </div>
+                        <span class="${contribClass} fw-bold">${sign}${contributionPercent}%</span>
+                    `;
+                    container.appendChild(div);
+                });
+            }
+        }
+
+        // Set example for high risk demonstration
+        function setHighRiskExample() {
+            document.querySelector('select[name="international_plan"]').value = 'Yes';
+            document.querySelector('input[name="customer_service_calls"]').value = '4';
+            document.querySelector('input[name="account_length"]').value = '25';
+            document.querySelector('input[name="total_day_minutes"]').value = '120';
+            document.querySelector('input[name="total_day_charge"]').value = '20.40';
+        }
+
+        // Set example for low risk demonstration
+        function setLowRiskExample() {
+            document.querySelector('select[name="international_plan"]').value = 'No';
+            document.querySelector('select[name="voice_mail_plan"]').value = 'Yes';
+            document.querySelector('input[name="number_vmail_messages"]').value = '25';
+            document.querySelector('input[name="customer_service_calls"]').value = '0';
+            document.querySelector('input[name="account_length"]').value = '150';
+            document.querySelector('input[name="total_day_minutes"]').value = '250';
+            document.querySelector('input[name="total_day_charge"]').value = '42.50';
+        }
+    </script>
+</body>
+</html>
