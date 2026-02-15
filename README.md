@@ -1,7 +1,7 @@
- Project Overview
+Project Overview:
 A machine learning-powered web application that predicts customer churn probability for telecom companies. The system analyzes customer usage patterns, service plans, and support interactions to identify customers at risk of churning. The model achieves 94% accuracy and provides real-time predictions with detailed insights.
 
-Business Value
+Business Value:
 - Reduce Customer Attrition: Identify at-risk customers before they leave
 
 - Targeted Retention: Focus resources on high-risk customers
@@ -10,7 +10,7 @@ Business Value
 
 - Data-Driven Decisions: Understand key factors driving churn
 
-Dataset
+Dataset:
 The model is trained on the IBM Telecom Customer Churn Dataset with 5,000+ customer records and 20 features.
 
 Features:
