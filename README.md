@@ -90,27 +90,63 @@ ML Model
  - F1-Score    91%	  Harmonic mean of precision & recall
  - AUC-ROC	   96%	  Excellent class separation
 
-Confusion Matrix
-                [Predicted]
+Confusion Matrix: 
                   No Churn  Churn
 Actual No Churn    [890]    35
 Actual Churn        45     [230]
 
 Risk Levels:
-ProbabilityRange	Risk Level	Action Required
-  0-10%	       Very Low Risk	Continue quality service
-  10-20%	     Low Risk	Monitor patterns
-  20-35%	     Medium Risk	Consider engagement offers
- 
- 35-50%	     Medium-High Risk	Proactive engagement
-50-65%	     High Risk	Immediate retention actions
-65-80%	     Very High Risk	Urgent intervention
-80%+	       Critical Risk	Emergency retention
-📦 Installation
-Prerequisites
-Python 3.8 or higher
+ProbabilityRange    	Risk Level        	Action Required
+  0-10%	            Very Low Risk     	Continue quality service
+  10-20%	           Low Risk	          Monitor patterns
+  20-35%	           Medium Risk	       Consider engagement offers
+  35-50%	           Medium-High        Risk	Proactive engagement
+  50-65%	           High Risk	         Immediate retention actions
+  65-80%	           Very High Risk     Urgent intervention
+  80%+	             Critical Risk	     Emergency retention
 
-pip package manager
+Installation: 
+ - Prerequisites: Python 3.8 or higher
+ - pip package manager
+ - Git (optional)
 
-Git (optional)
+Step 1: Clone Repository
+git clone https://github.com/YOUR_USERNAME/churn-prediction-app.git
+cd churn-prediction-app
 
+Step 2: Create Virtual Environment
+# Windows
+python -m venv venv
+venv\Scripts\activate
+
+# Linux/Mac
+python3 -m venv venv
+source venv/bin/activate
+
+Step 3: Install Dependencies
+pip install -r requirements.txt
+
+Step 4: Run the Application
+python app.py
+
+Step 5: Access the Application
+Open your browser and navigate to: http://localhost:5000
+
+
+Project Structure: 
+
+churn-prediction-app/
+│
+├── app.py                           # Main Flask application
+├── requirements.txt                 # Python dependencies
+├── README.md                        # Project documentation
+├── .gitignore                       # Git ignore file
+│
+├── model/                           # Trained model artifacts
+│   ├── model.pkl                    # Random Forest model
+│   ├── preprocessor.pkl             # Data preprocessing pipeline
+│   ├── metadata.json                # Model metadata
+│   └── feature_names.json           # Feature names after encoding
+│
+└── templates/                       # HTML templates
+    └── index.html                   # Main application page
