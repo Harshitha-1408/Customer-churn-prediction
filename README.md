@@ -115,11 +115,11 @@ git clone https://github.com/YOUR_USERNAME/churn-prediction-app.git
 cd churn-prediction-app
 
 Step 2: Create Virtual Environment
-# Windows
+Windows:
 python -m venv venv
 venv\Scripts\activate
 
-# Linux/Mac
+Linux/Mac:
 python3 -m venv venv
 source venv/bin/activate
 
